@@ -53,7 +53,8 @@ Relações principais:
 - uma credencial possui um criador e um grupo opcional;
 - `VaultItem.shared_with` representa os destinatários do compartilhamento específico;
 - a exclusão de um grupo usa `SET_NULL` e preserva as credenciais;
-- criadores e responsáveis de auditoria usam `PROTECT` onde a remoção prejudicaria a rastreabilidade.
+- ao excluir um usuário, credenciais, grupos e auditoria são preservados com autoria nula;
+- somente superusuários podem excluir vínculos, organizações ou eventos pelo Django Admin.
 
 ## 5. Autorização
 

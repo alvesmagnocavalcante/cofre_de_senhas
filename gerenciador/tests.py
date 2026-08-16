@@ -212,6 +212,28 @@ class VaultSecurityTests(TestCase):
         self.assertRedirects(delete, reverse("vault:list"))
         self.assertFalse(VaultItem.objects.filter(pk=item.pk).exists())
 
+    def test_deleting_user_preserves_credentials_groups_and_audit(self):
+        group = VaultGroup.objects.create(
+            organization=self.org, created_by=self.bob, name="Grupo de Bob"
+        )
+        item = self.make_item(owner=self.bob)
+        event = AuditEvent.objects.create(
+            organization=self.org,
+            actor=self.bob,
+            vault_item_id=item.pk,
+            item_title=item.title,
+            action=AuditEvent.Action.CREATE,
+        )
+
+        self.bob.delete()
+
+        group.refresh_from_db()
+        item.refresh_from_db()
+        event.refresh_from_db()
+        self.assertIsNone(group.created_by)
+        self.assertIsNone(item.created_by)
+        self.assertIsNone(event.actor)
+
     def test_inactive_member_has_no_access(self):
         item = self.make_item(shared=True)
         Membership.objects.filter(organization=self.org, user=self.bob).update(

@@ -86,8 +86,9 @@ class VaultGroup(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="criado por",
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         related_name="vault_groups",
+        null=True,
     )
     created_at = models.DateTimeField("criado em", auto_now_add=True)
 
@@ -132,8 +133,9 @@ class VaultItem(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="criada por",
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         related_name="vault_items",
+        null=True,
     )
     group = models.ForeignKey(
         VaultGroup,
@@ -233,8 +235,9 @@ class AuditEvent(models.Model):
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="usuário responsável",
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         related_name="vault_audit_events",
+        null=True,
     )
     vault_item_id = models.UUIDField("identificador da senha", null=True, blank=True)
     item_title = models.CharField("título da senha", max_length=150)

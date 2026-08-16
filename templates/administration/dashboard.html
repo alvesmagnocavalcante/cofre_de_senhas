@@ -73,7 +73,7 @@
   <div class="admin-groups">
     {% for group in groups %}
     <article>
-      <div><strong>{{ group.name }}</strong><p>Responsável: {{ group.created_by.username }}</p><p>{{ group.total_items }} total · {{ group.private_items }} privada{{ group.private_items|pluralize }} · {{ group.shared_items }} compartilhada{{ group.shared_items|pluralize }}</p></div>
+      <div><strong>{{ group.name }}</strong><p>Responsável: {{ group.created_by.username|default:'Usuário removido' }}</p><p>{{ group.total_items }} total · {{ group.private_items }} privada{{ group.private_items|pluralize }} · {{ group.shared_items }} compartilhada{{ group.shared_items|pluralize }}</p></div>
       <div class="group-actions">
         <a href="{% url 'vault:group_update' group.pk %}?retorno=painel">Editar nome</a>
         <form method="post" action="{% url 'vault:group_delete' group.pk %}" onsubmit="return confirm('Excluir este grupo? As senhas serão mantidas sem grupo.')">{% csrf_token %}<input type="hidden" name="retorno" value="painel"><button class="danger-link" type="submit">Excluir</button></form>
@@ -90,7 +90,7 @@
       <thead><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Referência</th><th>Endereço IP</th></tr></thead>
       <tbody>
       {% for event in recent_events %}
-        <tr><td>{{ event.created_at|date:'d/m/Y H:i' }}</td><td>{{ event.actor.username }}</td><td>{{ event.get_action_display }}</td><td>{{ event.item_title }}</td><td>{{ event.ip_address|default:'—' }}</td></tr>
+        <tr><td>{{ event.created_at|date:'d/m/Y H:i' }}</td><td>{{ event.actor.username|default:'Usuário removido' }}</td><td>{{ event.get_action_display }}</td><td>{{ event.item_title }}</td><td>{{ event.ip_address|default:'—' }}</td></tr>
       {% empty %}<tr><td colspan="5">Nenhuma atividade registrada.</td></tr>{% endfor %}
       </tbody>
     </table>

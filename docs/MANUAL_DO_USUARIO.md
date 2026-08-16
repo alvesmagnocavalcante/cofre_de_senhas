@@ -123,6 +123,8 @@ O painel permite:
 - remover bloqueios causados por tentativas de login;
 - pesquisar usuários.
 
+O superusuário pode excluir contas definitivamente pelo Django Admin. Credenciais, grupos e eventos são preservados e passam a identificar o responsável como **Usuário removido**.
+
 O próprio administrador não pode suspender sua conta nem encerrar sua sessão pelo painel.
 
 ### Grupos

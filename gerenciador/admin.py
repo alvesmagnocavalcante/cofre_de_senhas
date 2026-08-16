@@ -36,7 +36,7 @@ class MembershipAdmin(admin.ModelAdmin):
         self._set_active(request, queryset, False, "{updated} acesso(s) suspenso(s).")
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
 
 
 # Cadastros principais do cofre.
@@ -47,7 +47,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     inlines = (MembershipInline,)
 
     def has_delete_permission(self, request, obj=None):
-        return obj is not None and obj.slug != ORGANIZATION_SLUG
+        return request.user.is_superuser
 
 
 @admin.register(VaultItem)
@@ -92,13 +92,16 @@ class AuditEventAdmin(admin.ModelAdmin):
     )
     list_filter = ("organization", "action")
     search_fields = ("item_title", "actor__username")
-    readonly_fields = tuple(field.name for field in AuditEvent._meta.fields)
+    audit_fields = tuple(field.name for field in AuditEvent._meta.fields)
+
+    def get_readonly_fields(self, request, obj=None):
+        return () if request.user.is_superuser else self.audit_fields
 
     def has_add_permission(self, request):
-        return False
+        return request.user.is_superuser
 
     def has_change_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
