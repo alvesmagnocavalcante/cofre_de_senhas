@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Painel administrativo | Carmel Hotéis{% endblock %}
+{% block content %}
+<section class="admin-heading">
+  <div>
+    <p class="eyebrow">ADMINISTRAÇÃO</p>
+    <h1>Painel administrativo</h1>
+    <p class="muted">Usuários, grupos e atividades do Cofre Carmel.</p>
+  </div>
+  <a class="button" href="{% url 'vault:list' %}">Voltar ao cofre</a>
+</section>
+
+<section class="stats-grid" aria-label="Indicadores">
+  <article><strong>{{ stats.active_users }}</strong><span>Usuários ativos</span></article>
+  <article><strong>{{ stats.pending_users }}</strong><span>Aguardando aprovação</span></article>
+  <article><strong>{{ stats.groups }}</strong><span>Grupos</span></article>
+  <article><strong>{{ stats.items }}</strong><span>Senhas cadastradas</span></article>
+  <article><strong>{{ stats.shared_items }}</strong><span>Senhas compartilhadas</span></article>
+</section>
+
+<section class="admin-section">
+  <div class="section-heading"><div><p class="eyebrow">ACESSOS</p><h2>Usuários</h2></div></div>
+  <form method="get" class="admin-search">
+    <input type="search" name="usuario" value="{{ user_query }}" placeholder="Pesquisar usuário" aria-label="Pesquisar usuário">
+    {% if group_query %}<input type="hidden" name="grupo" value="{{ group_query }}">{% endif %}
+    <button class="button" type="submit">Pesquisar</button>
+  </form>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Usuário</th><th>Perfil</th><th>Situação</th><th>Último acesso</th><th>Cadastrado em</th><th>Opções</th></tr></thead>
+      <tbody>
+      {% for member in memberships %}
+        <tr>
+          <td>{{ member.user.username }}{% if member.user == user %} <small>(você)</small>{% endif %}</td>
+          <td>
+            {% if member.user != user and member.role != 'owner' %}
+            <form method="post" action="{% url 'vault:administration_change_role' member.pk %}" class="role-form">
+              {% csrf_token %}
+              <select name="role" aria-label="Perfil de {{ member.user.username }}">
+                <option value="member" {% if member.role == 'member' %}selected{% endif %}>Membro</option>
+                <option value="admin" {% if member.role == 'admin' %}selected{% endif %}>Administrador</option>
+              </select>
+              <button type="submit">Salvar</button>
+            </form>
+            {% else %}{{ member.get_role_display }}{% endif %}
+          </td>
+          <td><span class="status {% if member.is_active and member.user.is_active %}active{% else %}pending{% endif %}">{% if member.is_active and member.user.is_active %}Ativo{% else %}Pendente ou suspenso{% endif %}</span></td>
+          <td>{{ member.user.last_login|date:'d/m/Y H:i'|default:'Nunca acessou' }}</td>
+          <td>{{ member.created_at|date:'d/m/Y H:i' }}</td>
+          <td><div class="row-actions">
+            {% if not member.is_active or not member.user.is_active %}
+            <form method="post" action="{% url 'vault:administration_approve_user' member.pk %}">{% csrf_token %}<button class="table-action approve" type="submit">Aprovar</button></form>
+            {% elif member.user != user %}
+            <form method="post" action="{% url 'vault:administration_suspend_user' member.pk %}" onsubmit="return confirm('Suspender o acesso deste usuário?')">{% csrf_token %}<button class="table-action suspend" type="submit">Suspender</button></form>
+            {% endif %}
+            {% if member.has_login_failures %}<form method="post" action="{% url 'vault:administration_unlock_user' member.pk %}">{% csrf_token %}<button class="table-action" type="submit">Desbloquear</button></form>{% endif %}
+            {% if member.user != user %}<form method="post" action="{% url 'vault:administration_end_sessions' member.pk %}" onsubmit="return confirm('Encerrar todas as sessões deste usuário?')">{% csrf_token %}<button class="table-action" type="submit">Encerrar sessões</button></form>{% endif %}
+          </div></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="admin-section">
+  <div class="section-heading"><div><p class="eyebrow">ORGANIZAÇÃO</p><h2>Grupos de senhas</h2></div><a class="button" href="{% url 'vault:group_create' %}">Novo grupo</a></div>
+  <form method="get" class="admin-search">
+    <input type="search" name="grupo" value="{{ group_query }}" placeholder="Pesquisar grupo" aria-label="Pesquisar grupo">
+    {% if user_query %}<input type="hidden" name="usuario" value="{{ user_query }}">{% endif %}
+    <button class="button" type="submit">Pesquisar</button>
+  </form>
+  <div class="admin-groups">
+    {% for group in groups %}
+    <article>
+      <div><strong>{{ group.name }}</strong><p>Responsável: {{ group.created_by.username }}</p><p>{{ group.total_items }} total · {{ group.private_items }} privada{{ group.private_items|pluralize }} · {{ group.shared_items }} compartilhada{{ group.shared_items|pluralize }}</p></div>
+      <div class="group-actions">
+        <a href="{% url 'vault:group_update' group.pk %}?retorno=painel">Editar nome</a>
+        <form method="post" action="{% url 'vault:group_delete' group.pk %}" onsubmit="return confirm('Excluir este grupo? As senhas serão mantidas sem grupo.')">{% csrf_token %}<input type="hidden" name="retorno" value="painel"><button class="danger-link" type="submit">Excluir</button></form>
+      </div>
+    </article>
+    {% empty %}<p class="muted">Nenhum grupo cadastrado.</p>{% endfor %}
+  </div>
+</section>
+
+<section class="admin-section">
+  <div class="section-heading"><div><p class="eyebrow">HISTÓRICO</p><h2>Atividades recentes</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Referência</th><th>Endereço IP</th></tr></thead>
+      <tbody>
+      {% for event in recent_events %}
+        <tr><td>{{ event.created_at|date:'d/m/Y H:i' }}</td><td>{{ event.actor.username }}</td><td>{{ event.get_action_display }}</td><td>{{ event.item_title }}</td><td>{{ event.ip_address|default:'—' }}</td></tr>
+      {% empty %}<tr><td colspan="5">Nenhuma atividade registrada.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

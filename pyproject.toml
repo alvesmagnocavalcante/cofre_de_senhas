@@ -1,0 +1,20 @@
+[project]
+name = "gerenciador-de-senhas"
+version = "0.1.0"
+description = "Cofre de senhas interno da Carmel Hotéis"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=50.0.0",
+    "dj-database-url>=3.1.2",
+    "django>=6.1",
+    "django-axes>=8.3.1",
+    "gunicorn>=26.0.0",
+    "psycopg[binary]>=3.3.4",
+    "python-dotenv>=1.2.2",
+    "whitenoise[brotli]>=6.12.0",
+]
+
+[tool.ruff.lint]
+# Campos declarativos do Django são atributos de classe por definição.
+ignore = ["RUF012"]

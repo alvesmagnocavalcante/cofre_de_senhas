@@ -1,0 +1,39 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Cofre | Carmel Hotéis{% endblock %}</title>
+  <link rel="icon" type="image/jpeg" href="{% static 'img/carmel-symbol.jpg' %}?v=20260815-2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <script src="{% static 'js/theme.js' %}?v=20260815-1"></script>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20260816-1">
+</head>
+<body>
+  <div hidden>{% csrf_token %}</div>
+  <header class="topbar">
+    <a class="brand" href="{% url 'vault:list' %}" aria-label="Carmel Hotéis - Cofre">
+      <img src="{% static 'img/carmel-hoteis-logo.png' %}?v=20260815-2" alt="Carmel Hotéis" width="148" height="58">
+      <span class="brand-context">Cofre</span>
+    </a>
+    <div class="account">
+      {% if user.is_authenticated %}
+        {% if can_access_administration %}<a href="{% url 'vault:administration' %}">Painel administrativo</a>{% endif %}
+        <span>{{ user.username }}</span>
+      {% endif %}
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Ativar modo escuro" title="Alterar tema"><span aria-hidden="true">◐</span><span data-theme-label>Modo escuro</span></button>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link" type="submit">Sair</button></form>
+      {% endif %}
+    </div>
+  </header>
+  <main class="container">
+    {% for message in messages %}<div class="message">{{ message }}</div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

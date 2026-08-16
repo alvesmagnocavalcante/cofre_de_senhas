@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Cofre | Carmel Hotéis{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">{{ membership.organization.name|upper }}</p>
+    <h1>Suas credenciais, organizadas.</h1>
+    <p class="muted">Mantenha senhas privadas ou compartilhe com usuários específicos ou com toda a Carmel.</p>
+  </div>
+  <div class="hero-actions">
+    <a class="button" href="{% url 'vault:group_create' %}">+ Novo grupo</a>
+    <a class="button primary" href="{% url 'vault:create' %}">+ Nova senha</a>
+  </div>
+</section>
+
+{% if groups %}
+<div class="group-list" aria-label="Grupos">
+  {% for group in groups %}
+  <span class="group-chip">
+    {{ group.name }}
+    {% if group.created_by == user or can_access_administration %}
+    <a class="group-edit" href="{% url 'vault:group_update' group.pk %}" title="Editar grupo" aria-label="Editar {{ group.name }}">Editar</a>
+    <form method="post" action="{% url 'vault:group_delete' group.pk %}" onsubmit="return confirm('Excluir o grupo? As senhas serão mantidas.')">
+      {% csrf_token %}<button type="submit" title="Excluir grupo" aria-label="Excluir {{ group.name }}">×</button>
+    </form>
+    {% endif %}
+  </span>
+  {% endfor %}
+</div>
+{% endif %}
+
+<form method="get" class="search">
+  <input type="search" name="q" value="{{ query }}" placeholder="Buscar por grupo, nome, IP, usuário ou site" aria-label="Buscar senhas">
+  <button class="button" type="submit">Buscar</button>
+</form>
+
+{% regroup items by group as grouped_items %}
+{% for grouped in grouped_items %}
+<details class="group-section" {% if not grouped.grouper %}open{% endif %}>
+  <summary class="group-title">
+    <span>{% if grouped.grouper %}{{ grouped.grouper.name }}{% else %}Sem grupo{% endif %}</span>
+    <span class="group-count">{{ grouped.list|length }} credencial{{ grouped.list|length|pluralize:"is" }}</span>
+  </summary>
+  <div class="vault-grid">
+  {% for item in grouped.list %}
+  <article class="vault-card">
+    <div class="card-head">
+      <div class="site-icon">{{ item.title|first|upper }}</div>
+      <div><h2>{{ item.title }}</h2><p>{{ item.username|default:'Sem usuário' }}</p></div>
+      <span class="badge {% if item.visibility != 'private' %}shared{% endif %}">{{ item.get_visibility_display }}</span>
+    </div>
+    {% if item.visibility == 'specific' %}
+    <p class="sharing-summary"><span>Compartilhada com</span> {% for recipient in item.shared_with.all %}{{ recipient.username }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% endif %}
+    {% if item.host %}<p class="host"><span>IP / Equipamento</span><code>{{ item.host }}</code></p>{% endif %}
+    {% if item.website %}<a class="website" href="{{ item.website }}" target="_blank" rel="noopener noreferrer">{{ item.website|truncatechars:42 }}</a>{% endif %}
+    <div class="secret-row">
+      <code data-secret-for="{{ item.pk }}">••••••••••••</code>
+      {% if item.created_by == user %}
+      <button class="icon-button reveal" type="button" data-url="{% url 'vault:reveal' item.pk %}" data-id="{{ item.pk }}">Mostrar</button>
+      {% endif %}
+      <button class="icon-button copy" type="button" data-url="{% url 'vault:reveal' item.pk %}" data-id="{{ item.pk }}">Copiar</button>
+    </div>
+    <footer>
+      <small>Criada por {{ item.created_by.username }}</small>
+      {% if item.created_by == user %}
+      <div class="actions">
+        <a href="{% url 'vault:update' item.pk %}">Editar</a>
+        <form method="post" action="{% url 'vault:delete' item.pk %}" onsubmit="return confirm('Excluir esta senha permanentemente?')">
+          {% csrf_token %}<button class="danger-link" type="submit">Excluir</button>
+        </form>
+      </div>
+      {% endif %}
+    </footer>
+  </article>
+  {% endfor %}
+  </div>
+</details>
+{% empty %}
+<div class="empty"><h2>Nenhuma senha encontrada</h2><p>Crie um grupo e adicione sua primeira credencial ao cofre.</p></div>
+{% endfor %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/vault.js' %}?v=20260815-2"></script>{% endblock %}

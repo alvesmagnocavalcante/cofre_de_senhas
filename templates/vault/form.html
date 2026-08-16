@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | Carmel Hotéis{% endblock %}
+{% block content %}
+<section class="form-card">
+  <p class="eyebrow">COFRE</p>
+  <h1>{{ title }}</h1>
+  <form method="post" class="form-stack" autocomplete="off">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form.visible_fields %}
+    <div class="form-field" data-field="{{ field.name }}">
+      {{ field.errors }}
+      {{ field.label_tag }}
+      {{ field }}
+      {% if field.help_text %}<span class="helptext">{{ field.help_text|safe }}</span>{% endif %}
+    </div>
+    {% endfor %}
+    {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+    <div class="form-actions">
+      <a class="button" href="{% if cancel_url %}{{ cancel_url }}{% else %}{% url 'vault:list' %}{% endif %}">Cancelar</a>
+      <button class="button primary" type="submit">Salvar</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  const visibility = document.querySelector('#id_visibility');
+  const recipients = document.querySelector('[data-field="shared_with"]');
+  function updateRecipients() {
+    if (!recipients) return;
+    const value = visibility?.value;
+    const options = recipients.querySelectorAll('input[type="checkbox"]');
+    recipients.hidden = value === 'private';
+    options.forEach(option => {
+      option.disabled = value === 'organization';
+      if (value === 'organization') option.checked = true;
+    });
+  }
+  visibility?.addEventListener('change', updateRecipients);
+  updateRecipients();
+</script>
+{% endblock %}

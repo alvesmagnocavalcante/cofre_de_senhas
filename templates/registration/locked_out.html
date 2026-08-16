@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Acesso bloqueado | Carmel Hotéis{% endblock %}
+{% block content %}
+<section class="lockout-card" role="alert">
+  <div class="lockout-icon" aria-hidden="true">!</div>
+  <p class="eyebrow">PROTEÇÃO DE ACESSO</p>
+  <h1>Acesso temporariamente bloqueado</h1>
+  <p class="lockout-lead">Identificamos várias tentativas de entrada com dados incorretos. O acesso foi interrompido temporariamente para proteger o Cofre Carmel.</p>
+  <div class="lockout-notice">
+    <strong>Tente novamente em 15 minutos.</strong>
+    <span>Se você não reconhece essas tentativas ou precisa de acesso imediato, solicite o desbloqueio a um administrador.</span>
+  </div>
+  <a class="button primary" href="{% url 'login' %}">Voltar à página de acesso</a>
+</section>
+{% endblock %}

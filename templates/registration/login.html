@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Entrar | Carmel Hotéis{% endblock %}
+{% block content %}
+<section class="login-layout">
+  <div class="login-visual">
+    <img src="{% static 'images/security-amico.png' %}" alt="Ilustração de segurança digital">
+  </div>
+  <div class="auth-card login-card">
+    <p class="eyebrow">ACESSO RESTRITO</p>
+    <h1>Cofre de Senhas</h1>
+    <form method="post" class="form-stack">
+      {% csrf_token %}
+      {{ form.as_p }}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <button class="button primary" type="submit">Entrar</button>
+    </form>
+    <p class="muted">Primeiro acesso? <a href="{% url 'vault:signup' %}">Criar conta</a></p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,1 @@
+ORGANIZATION_SLUG = "carmel"
