@@ -34,6 +34,13 @@ def _editable_group(request, membership, group_id):
     return get_object_or_404(groups)
 
 
+def _editable_item(request, membership, item_id):
+    items = VaultItem.objects.filter(pk=item_id, organization=membership.organization)
+    if not can_administer(request.user, membership):
+        items = items.filter(created_by=request.user)
+    return get_object_or_404(items)
+
+
 def _group_destination(request):
     returns_to_panel = (
         request.GET.get("retorno") == "painel"
@@ -79,7 +86,11 @@ def signup(request):
 def vault_list(request, membership):
     query = request.GET.get("q", "").strip()
     items = (
-        visible_items(request.user, membership.organization)
+        visible_items(
+            request.user,
+            membership.organization,
+            can_view_all=can_administer(request.user, membership),
+        )
         .select_related("created_by", "group")
         .prefetch_related("shared_with")
     )
@@ -119,12 +130,7 @@ def vault_create(request, membership):
 
 @membership_required
 def vault_update(request, item_id, membership):
-    item = get_object_or_404(
-        VaultItem,
-        pk=item_id,
-        organization=membership.organization,
-        created_by=request.user,
-    )
+    item = _editable_item(request, membership, item_id)
     previous_sharing = (
         item.visibility,
         frozenset(item.shared_with.values_list("pk", flat=True)),
@@ -156,12 +162,7 @@ def vault_update(request, item_id, membership):
 @membership_required
 @require_POST
 def vault_delete(request, item_id, membership):
-    item = get_object_or_404(
-        VaultItem,
-        pk=item_id,
-        organization=membership.organization,
-        created_by=request.user,
-    )
+    item = _editable_item(request, membership, item_id)
     record_audit(request, AuditEvent.Action.DELETE, item=item)
     item.delete()
     messages.success(request, "Senha excluída.")
@@ -173,10 +174,19 @@ def vault_delete(request, item_id, membership):
 @never_cache
 def vault_reveal(request, item_id, membership):
     item = get_object_or_404(
-        visible_items(request.user, membership.organization), pk=item_id
+        visible_items(
+            request.user,
+            membership.organization,
+            can_view_all=can_administer(request.user, membership),
+        ),
+        pk=item_id,
     )
     action = request.POST.get("action", "reveal")
-    if action == "reveal" and item.created_by_id != request.user.id:
+    if (
+        action == "reveal"
+        and item.created_by_id != request.user.id
+        and not can_administer(request.user, membership)
+    ):
         return JsonResponse(
             {"error": "Somente o criador pode visualizar esta senha."}, status=403
         )

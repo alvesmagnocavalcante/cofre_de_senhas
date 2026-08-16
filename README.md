@@ -49,9 +49,10 @@ Para rotacionar a criptografia sem perder acesso, configure `VAULT_ENCRYPTION_KE
 - Todo usuário cadastrado pertence automaticamente à Carmel.
 - Cadastros públicos exigem aprovação administrativa antes do primeiro acesso.
 - Cinco falhas de login bloqueiam a combinação usuário/IP por 15 minutos.
-- **Somente eu**: apenas o criador localiza, copia, revela, edita ou exclui.
-- **Usuários específicos**: destinatários selecionados localizam e copiam; somente o criador revela, edita ou exclui.
-- **Todos da Carmel**: membros ativos localizam e copiam; somente o criador revela, edita ou exclui.
+- **Somente eu**: apenas o criador e administradores localizam, copiam, revelam, editam ou excluem.
+- **Usuários específicos**: destinatários selecionados localizam e copiam; o criador e administradores controlam a credencial.
+- **Todos da Carmel**: membros ativos localizam e copiam; o criador e administradores controlam a credencial.
+- Administradores possuem controle completo sobre todas as credenciais da organização.
 - Senhas e observações são criptografadas no banco.
 - Credenciais podem ser organizadas em grupos e registrar IP ou nome do equipamento.
 - O criador ou um administrador pode renomear grupos sem perder as credenciais vinculadas.

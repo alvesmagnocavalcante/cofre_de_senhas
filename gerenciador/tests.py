@@ -184,6 +184,34 @@ class VaultSecurityTests(TestCase):
         response = self.client.get(reverse("vault:update", args=[item.pk]))
         self.assertEqual(response.status_code, 404)
 
+    def test_owner_has_full_crud_over_another_users_item(self):
+        item = self.make_item(owner=self.bob)
+        self.client.force_login(self.alice)
+
+        listing = self.client.get(reverse("vault:list"))
+        self.assertContains(listing, item.title)
+        reveal = self.client.post(
+            reverse("vault:reveal", args=[item.pk]), {"action": "reveal"}
+        )
+        self.assertEqual(reveal.status_code, 200)
+        self.assertEqual(reveal.json()["secret"], "S3gredo!")
+
+        update = self.client.post(
+            reverse("vault:update", args=[item.pk]),
+            {
+                "title": "ERP atualizado",
+                "secret": "",
+                "visibility": VaultItem.Visibility.PRIVATE,
+            },
+        )
+        self.assertRedirects(update, reverse("vault:list"))
+        item.refresh_from_db()
+        self.assertEqual(item.title, "ERP atualizado")
+
+        delete = self.client.post(reverse("vault:delete", args=[item.pk]))
+        self.assertRedirects(delete, reverse("vault:list"))
+        self.assertFalse(VaultItem.objects.filter(pk=item.pk).exists())
+
     def test_inactive_member_has_no_access(self):
         item = self.make_item(shared=True)
         Membership.objects.filter(organization=self.org, user=self.bob).update(

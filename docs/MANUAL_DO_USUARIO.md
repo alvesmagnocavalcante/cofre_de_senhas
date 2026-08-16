@@ -9,10 +9,10 @@ O Cofre Carmel organiza credenciais pessoais e compartilhadas da Carmel Hotéis.
 | Perfil | Permissões principais |
 | --- | --- |
 | Membro | Criar grupos e credenciais, gerenciar o próprio conteúdo e copiar credenciais compartilhadas consigo |
-| Administrador | Permissões de membro e acesso ao painel administrativo |
+| Administrador | Painel administrativo e controle completo das credenciais e grupos |
 | Proprietário | Mesmo acesso administrativo, reservado ao responsável principal pelo cofre |
 
-Administradores não recebem permissão automática para revelar senhas criadas por outras pessoas.
+Administradores e proprietários possuem controle completo sobre as credenciais da Carmel, inclusive as criadas por outros usuários.
 
 ## 3. Criar uma conta
 
@@ -89,14 +89,14 @@ Grupos servem apenas para organização e não concedem acesso.
 
 ## 8. Mostrar e copiar senhas
 
-| Ação | Criador | Usuário autorizado |
-| --- | --- | --- |
-| Localizar a credencial | Sim | Sim |
-| Copiar a senha | Sim | Sim |
-| Mostrar a senha na tela | Sim | Não |
-| Editar | Sim | Não |
-| Excluir | Sim | Não |
-| Alterar compartilhamento | Sim | Não |
+| Ação | Criador | Usuário autorizado | Administrador |
+| --- | --- | --- | --- |
+| Localizar a credencial | Sim | Sim | Sim |
+| Copiar a senha | Sim | Sim | Sim |
+| Mostrar a senha na tela | Sim | Não | Sim |
+| Editar | Sim | Não | Sim |
+| Excluir | Sim | Não | Sim |
+| Alterar compartilhamento | Sim | Não | Sim |
 
 Use **Mostrar** apenas quando necessário. O valor volta a ser ocultado após 30 segundos. A opção **Copiar** envia a senha diretamente para a área de transferência sem incluí-la no HTML inicial da página.
 
@@ -164,7 +164,7 @@ Verifique se você é o criador, foi selecionado individualmente ou se ela foi c
 
 ### Não consigo mostrar uma senha compartilhada
 
-Esse é o comportamento esperado. Usuários autorizados podem copiar; somente o criador pode mostrar o valor na tela.
+Esse é o comportamento esperado. Usuários autorizados podem copiar; somente o criador ou um administrador pode mostrar o valor na tela.
 
 ### Usuário não aparece na seleção
 

@@ -78,14 +78,14 @@ Uma credencial é retornada quando pelo menos uma condição é verdadeira:
 
 | Operação | Criador | Destinatário | Administrador não criador |
 | --- | --- | --- | --- |
-| Listar metadados | Sim | Conforme compartilhamento | Conforme compartilhamento |
-| Copiar segredo | Sim | Conforme compartilhamento | Conforme compartilhamento |
-| Revelar segredo | Sim | Não | Não |
-| Editar ou excluir | Sim | Não | Não |
-| Alterar compartilhamento | Sim | Não | Não |
+| Listar metadados | Sim | Conforme compartilhamento | Sim |
+| Copiar segredo | Sim | Conforme compartilhamento | Sim |
+| Revelar segredo | Sim | Não | Sim |
+| Editar ou excluir | Sim | Não | Sim |
+| Alterar compartilhamento | Sim | Não | Sim |
 | Administrar usuários e grupos | Conforme perfil | Conforme perfil | Sim |
 
-O perfil administrativo não contorna a proteção dos segredos.
+O perfil administrativo concede controle completo sobre as credenciais da organização. Cópias, revelações e alterações continuam registradas na auditoria.
 
 ## 6. Criptografia
 
@@ -329,6 +329,6 @@ O PostgreSQL é selecionado automaticamente quando `DATABASE_URL` está definida
 - Nunca registre segredos em logs, testes ou mensagens de erro.
 - Não altere `visible_items` sem testes de autorização.
 - Toda nova ação sensível deve aceitar `POST`, validar CSRF e gerar auditoria.
-- Preserve a regra de que administradores não revelam senhas de terceiros.
+- Preserve a auditoria das ações administrativas sobre credenciais de terceiros.
 - Execute testes antes e depois de cada migração.
 - Atualize dependências somente após revisar segurança e compatibilidade.

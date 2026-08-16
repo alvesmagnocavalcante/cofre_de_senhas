@@ -57,14 +57,14 @@
     {% if item.website %}<a class="website" href="{{ item.website }}" target="_blank" rel="noopener noreferrer">{{ item.website|truncatechars:42 }}</a>{% endif %}
     <div class="secret-row">
       <code data-secret-for="{{ item.pk }}">••••••••••••</code>
-      {% if item.created_by == user %}
+      {% if item.created_by == user or can_access_administration %}
       <button class="icon-button reveal" type="button" data-url="{% url 'vault:reveal' item.pk %}" data-id="{{ item.pk }}">Mostrar</button>
       {% endif %}
       <button class="icon-button copy" type="button" data-url="{% url 'vault:reveal' item.pk %}" data-id="{{ item.pk }}">Copiar</button>
     </div>
     <footer>
       <small>Criada por {{ item.created_by.username }}</small>
-      {% if item.created_by == user %}
+      {% if item.created_by == user or can_access_administration %}
       <div class="actions">
         <a href="{% url 'vault:update' item.pk %}">Editar</a>
         <form method="post" action="{% url 'vault:delete' item.pk %}" onsubmit="return confirm('Excluir esta senha permanentemente?')">

@@ -5,8 +5,11 @@ from .models import AuditEvent, Membership, VaultGroup, VaultItem
 
 
 # Consultas das credenciais visíveis.
-def visible_items(user, organization):
-    return VaultItem.objects.filter(organization=organization).filter(
+def visible_items(user, organization, can_view_all=False):
+    items = VaultItem.objects.filter(organization=organization)
+    if can_view_all:
+        return items
+    return items.filter(
         Q(created_by=user)
         | Q(visibility=VaultItem.Visibility.ORGANIZATION)
         | Q(visibility=VaultItem.Visibility.SPECIFIC, shared_with=user)
