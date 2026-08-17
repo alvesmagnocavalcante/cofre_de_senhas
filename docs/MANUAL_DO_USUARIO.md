@@ -9,10 +9,10 @@ O Cofre Carmel organiza credenciais pessoais e compartilhadas da Carmel Hotéis.
 | Perfil | Permissões principais |
 | --- | --- |
 | Membro | Criar grupos e credenciais, gerenciar o próprio conteúdo e copiar credenciais compartilhadas consigo |
-| Administrador | Painel administrativo e controle completo das credenciais e grupos |
+| Administrador | Painel administrativo e controle das credenciais compartilhadas e dos grupos |
 | Proprietário | Mesmo acesso administrativo, reservado ao responsável principal pelo cofre |
 
-Administradores e proprietários possuem controle completo sobre as credenciais da Carmel, inclusive as criadas por outros usuários.
+Administradores e proprietários não localizam, copiam, mostram, editam nem excluem credenciais pessoais criadas por outros usuários.
 
 ## 3. Criar uma conta
 
@@ -89,14 +89,14 @@ Grupos servem apenas para organização e não concedem acesso.
 
 ## 8. Mostrar e copiar senhas
 
-| Ação | Criador | Usuário autorizado | Administrador |
-| --- | --- | --- | --- |
-| Localizar a credencial | Sim | Sim | Sim |
-| Copiar a senha | Sim | Sim | Sim |
-| Mostrar a senha na tela | Sim | Não | Sim |
-| Editar | Sim | Não | Sim |
-| Excluir | Sim | Não | Sim |
-| Alterar compartilhamento | Sim | Não | Sim |
+| Ação | Criador | Usuário autorizado | Administrador: compartilhada | Administrador: pessoal |
+| --- | --- | --- | --- | --- |
+| Localizar a credencial | Sim | Sim | Sim | Não |
+| Copiar a senha | Sim | Sim | Sim | Não |
+| Mostrar a senha na tela | Sim | Não | Não | Não |
+| Editar | Sim | Não | Sim | Não |
+| Excluir | Sim | Não | Sim | Não |
+| Alterar compartilhamento | Sim | Não | Sim | Não |
 
 Use **Mostrar** apenas quando necessário. O valor volta a ser ocultado após 30 segundos. A opção **Copiar** envia a senha diretamente para a área de transferência sem incluí-la no HTML inicial da página.
 
@@ -123,13 +123,13 @@ O painel permite:
 - remover bloqueios causados por tentativas de login;
 - pesquisar usuários.
 
-O superusuário pode excluir contas definitivamente pelo Django Admin. Credenciais, grupos e eventos são preservados e passam a identificar o responsável como **Usuário removido**.
+O superusuário pode excluir contas definitivamente pelo Django Admin. Credenciais, grupos e eventos são preservados e passam a identificar o responsável como **Usuário removido**. Credenciais pessoais preservadas continuam inacessíveis aos administradores.
 
 O próprio administrador não pode suspender sua conta nem encerrar sua sessão pelo painel.
 
 ### Grupos
 
-O painel apresenta o responsável, a quantidade de credenciais privadas e compartilhadas e permite editar ou excluir grupos.
+O painel apresenta o responsável e as quantidades de credenciais privadas e compartilhadas, sem expor as credenciais pessoais. Ele também permite editar ou excluir grupos.
 
 ### Atividades recentes
 
@@ -148,7 +148,7 @@ Use essa área apenas para:
 - ações administrativas em lote;
 - investigação de auditoria.
 
-Eventos de auditoria são somente leitura. Os vínculos exibidos em **Cadastros de usuários** não oferecem exclusão pelo Django Admin.
+O superusuário pode administrar eventos e vínculos. A organização Carmel não pode ser excluída pelo painel, evitando a remoção indireta de credenciais pessoais.
 
 ## 12. Problemas comuns
 
@@ -166,7 +166,7 @@ Verifique se você é o criador, foi selecionado individualmente ou se ela foi c
 
 ### Não consigo mostrar uma senha compartilhada
 
-Esse é o comportamento esperado. Usuários autorizados podem copiar; somente o criador ou um administrador pode mostrar o valor na tela.
+Esse é o comportamento esperado. Usuários autorizados e administradores podem copiar credenciais compartilhadas; somente o criador pode mostrar o valor na tela.
 
 ### Usuário não aparece na seleção
 

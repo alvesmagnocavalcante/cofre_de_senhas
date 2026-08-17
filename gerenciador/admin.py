@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Q
 
 from .constants import ORGANIZATION_SLUG
 from .models import AuditEvent, Membership, Organization, VaultGroup, VaultItem
@@ -47,7 +48,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     inlines = (MembershipInline,)
 
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
+        return False
 
 
 @admin.register(VaultItem)
@@ -70,6 +71,30 @@ class VaultItemAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(
+            Q(created_by=request.user) | ~Q(visibility=VaultItem.Visibility.PRIVATE)
+        )
+
+    def _can_manage(self, request, obj):
+        return bool(
+            request.user.is_superuser
+            and (
+                obj is None
+                or obj.created_by_id == request.user.id
+                or obj.visibility != VaultItem.Visibility.PRIVATE
+            )
+        )
+
+    def has_view_permission(self, request, obj=None):
+        return self._can_manage(request, obj)
+
+    def has_change_permission(self, request, obj=None):
+        return self._can_manage(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        return self._can_manage(request, obj)
 
 
 @admin.register(VaultGroup)

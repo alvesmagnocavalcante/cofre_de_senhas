@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -36,8 +37,10 @@ def _editable_group(request, membership, group_id):
 
 def _editable_item(request, membership, item_id):
     items = VaultItem.objects.filter(pk=item_id, organization=membership.organization)
-    if not can_administer(request.user, membership):
-        items = items.filter(created_by=request.user)
+    allowed = Q(created_by=request.user)
+    if can_administer(request.user, membership):
+        allowed |= ~Q(visibility=VaultItem.Visibility.PRIVATE)
+    items = items.filter(allowed)
     return get_object_or_404(items)
 
 
@@ -86,11 +89,7 @@ def signup(request):
 def vault_list(request, membership):
     query = request.GET.get("q", "").strip()
     items = (
-        visible_items(
-            request.user,
-            membership.organization,
-            can_view_all=can_administer(request.user, membership),
-        )
+        visible_items(request.user, membership.organization)
         .select_related("created_by", "group")
         .prefetch_related("shared_with")
     )
@@ -174,18 +173,13 @@ def vault_delete(request, item_id, membership):
 @never_cache
 def vault_reveal(request, item_id, membership):
     item = get_object_or_404(
-        visible_items(
-            request.user,
-            membership.organization,
-            can_view_all=can_administer(request.user, membership),
-        ),
+        visible_items(request.user, membership.organization),
         pk=item_id,
     )
     action = request.POST.get("action", "reveal")
     if (
         action == "reveal"
         and item.created_by_id != request.user.id
-        and not can_administer(request.user, membership)
     ):
         return JsonResponse(
             {"error": "Somente o criador pode visualizar esta senha."}, status=403

@@ -184,33 +184,50 @@ class VaultSecurityTests(TestCase):
         response = self.client.get(reverse("vault:update", args=[item.pk]))
         self.assertEqual(response.status_code, 404)
 
-    def test_owner_has_full_crud_over_another_users_item(self):
+    def test_owner_cannot_access_another_users_private_item(self):
         item = self.make_item(owner=self.bob)
         self.client.force_login(self.alice)
 
         listing = self.client.get(reverse("vault:list"))
-        self.assertContains(listing, item.title)
+        self.assertNotContains(listing, item.title)
         reveal = self.client.post(
             reverse("vault:reveal", args=[item.pk]), {"action": "reveal"}
         )
-        self.assertEqual(reveal.status_code, 200)
-        self.assertEqual(reveal.json()["secret"], "S3gredo!")
-
-        update = self.client.post(
-            reverse("vault:update", args=[item.pk]),
-            {
-                "title": "ERP atualizado",
-                "secret": "",
-                "visibility": VaultItem.Visibility.PRIVATE,
-            },
+        self.assertEqual(reveal.status_code, 404)
+        copy = self.client.post(
+            reverse("vault:reveal", args=[item.pk]), {"action": "copy"}
         )
-        self.assertRedirects(update, reverse("vault:list"))
-        item.refresh_from_db()
-        self.assertEqual(item.title, "ERP atualizado")
+        self.assertEqual(copy.status_code, 404)
+
+        update = self.client.get(reverse("vault:update", args=[item.pk]))
+        self.assertEqual(update.status_code, 404)
 
         delete = self.client.post(reverse("vault:delete", args=[item.pk]))
-        self.assertRedirects(delete, reverse("vault:list"))
-        self.assertFalse(VaultItem.objects.filter(pk=item.pk).exists())
+        self.assertEqual(delete.status_code, 404)
+        self.assertTrue(VaultItem.objects.filter(pk=item.pk).exists())
+
+    def test_superuser_django_admin_hides_another_users_private_item(self):
+        item = self.make_item(owner=self.bob)
+        self.alice.is_staff = True
+        self.alice.is_superuser = True
+        self.alice.save(update_fields=("is_staff", "is_superuser"))
+        self.client.force_login(self.alice)
+
+        listing = self.client.get(reverse("admin:gerenciador_vaultitem_changelist"))
+        self.assertEqual(listing.status_code, 200)
+        self.assertNotContains(listing, item.title)
+
+        change = self.client.get(
+            reverse("admin:gerenciador_vaultitem_change", args=[item.pk])
+        )
+        self.assertNotEqual(change.status_code, 200)
+
+        delete = self.client.post(
+            reverse("admin:gerenciador_vaultitem_delete", args=[item.pk]),
+            {"post": "yes"},
+        )
+        self.assertNotEqual(delete.status_code, 200)
+        self.assertTrue(VaultItem.objects.filter(pk=item.pk).exists())
 
     def test_deleting_user_preserves_credentials_groups_and_audit(self):
         group = VaultGroup.objects.create(

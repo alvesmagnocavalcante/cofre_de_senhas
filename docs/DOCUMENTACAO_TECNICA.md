@@ -77,16 +77,16 @@ Uma credencial é retornada quando pelo menos uma condição é verdadeira:
 
 ### Matriz de autorização
 
-| Operação | Criador | Destinatário | Administrador não criador |
-| --- | --- | --- | --- |
-| Listar metadados | Sim | Conforme compartilhamento | Sim |
-| Copiar segredo | Sim | Conforme compartilhamento | Sim |
-| Revelar segredo | Sim | Não | Sim |
-| Editar ou excluir | Sim | Não | Sim |
-| Alterar compartilhamento | Sim | Não | Sim |
-| Administrar usuários e grupos | Conforme perfil | Conforme perfil | Sim |
+| Operação | Criador | Destinatário | Administrador: compartilhada | Administrador: pessoal |
+| --- | --- | --- | --- | --- |
+| Listar metadados | Sim | Conforme compartilhamento | Sim | Não |
+| Copiar segredo | Sim | Conforme compartilhamento | Sim | Não |
+| Revelar segredo | Sim | Não | Não | Não |
+| Editar ou excluir | Sim | Não | Sim | Não |
+| Alterar compartilhamento | Sim | Não | Sim | Não |
+| Administrar usuários e grupos | Conforme perfil | Conforme perfil | Sim | Sim |
 
-O perfil administrativo concede controle completo sobre as credenciais da organização. Cópias, revelações e alterações continuam registradas na auditoria.
+O perfil administrativo controla credenciais compartilhadas, usuários e grupos. Credenciais pessoais permanecem isoladas do administrador tanto na aplicação quanto no Django Admin.
 
 ## 6. Criptografia
 
