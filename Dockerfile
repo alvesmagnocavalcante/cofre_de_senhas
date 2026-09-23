@@ -23,6 +23,14 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY . .
 RUN uv sync --frozen --no-dev
 
+# Gera os estáticos e o manifest do WhiteNoise.
+# Os valores abaixo existem só durante o build e não vão para a imagem final.
+RUN DJANGO_DEBUG=false \
+    DJANGO_SECRET_KEY=build-only-valor-descartavel-nao-usar-em-producao-0123456789 \
+    DJANGO_ALLOWED_HOSTS=localhost \
+    VAULT_ENCRYPTION_KEYS="$(/app/.venv/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" \
+    /app/.venv/bin/python manage.py collectstatic --noinput
+
 # ---------- Stage 2: runtime ----------
 FROM python:3.12-slim-bookworm AS runtime
 
