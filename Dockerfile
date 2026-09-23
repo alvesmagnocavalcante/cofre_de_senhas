@@ -1,24 +1,27 @@
 # ---------- Stage 1: builder ----------
 FROM python:3.12-slim-bookworm AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+ENV UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1 \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_PROJECT_ENVIRONMENT=/app/.venv
+
+# Necessário apenas se alguma dependência compila extensões nativas (ex.: psycopg2 sem -binary)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-RUN python -m venv /app/.venv
-ENV PATH="/app/.venv/bin:$PATH"
+# Camada de dependências (só invalida quando pyproject.toml/uv.lock mudam)
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
+# Código da aplicação + instalação do projeto
 COPY . .
+RUN uv sync --frozen --no-dev
 
 # ---------- Stage 2: runtime ----------
 FROM python:3.12-slim-bookworm AS runtime
@@ -30,6 +33,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+# libpq5 só é necessário se usar psycopg/psycopg2 com PostgreSQL
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libpq5 \
     && rm -rf /var/lib/apt/lists/* \
